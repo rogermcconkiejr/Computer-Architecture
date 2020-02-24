@@ -2,11 +2,22 @@
 
 import sys
 
+LDI = 0b10000010
+PRN = 0b01000111
+HLT = 0b00000001
+
 class CPU:
     """Main CPU class."""
 
-    def __init__(self):
+    def __init__(self, ram = [0]*256, pc=0, reg= [0]*8):
         """Construct a new CPU."""
+        self.ram = ram
+        self.pc = pc
+        self.reg = reg
+
+    def ram_read(self, mar):
+        pass
+    def ram_write(self, mar, write):
         pass
 
     def load(self):
@@ -29,7 +40,6 @@ class CPU:
         for instruction in program:
             self.ram[address] = instruction
             address += 1
-
 
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
@@ -60,6 +70,23 @@ class CPU:
 
         print()
 
+
     def run(self):
-        """Run the CPU."""
-        pass
+        while True:
+            command = self.ram[self.pc]
+            if command == LDI:
+                # Sets specified register to specified value.
+                num = self.ram[self.pc + 2]
+                regI = self.ram[self.pc + 1]
+                self.reg[regI] = num
+                self.pc += 3
+            elif command == PRN:
+                # Print numeric value stored in the given register.
+                regI = self.ram[self.pc + 1]
+                print(self.reg[regI])
+                self.pc += 2
+            elif command == HLT:
+                sys.exit(0)
+            else:
+                print("I did not understand that command: {command}")
+                sys.exit(1)
