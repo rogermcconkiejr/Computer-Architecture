@@ -5,48 +5,66 @@ import sys
 LDI = 0b10000010
 PRN = 0b01000111
 HLT = 0b00000001
+MUL = 0b10100010
 
 class CPU:
     """Main CPU class."""
 
-    def __init__(self, ram = [0]*256, pc=0, reg= [0]*8):
+    def __init__(self):
         """Construct a new CPU."""
-        self.ram = ram
-        self.pc = pc
-        self.reg = reg
+        self.ram = [0]*256
+        self.pc = 0
+        self.reg = [0]*8
 
     def ram_read(self, mar):
-        pass
-    def ram_write(self, mar, write):
-        pass
+        return self.ram[mar]
+    def ram_write(self, mar, value):
+        self.ram[mar] = value
 
-    def load(self):
+
+    def load(self, filename):
         """Load a program into memory."""
 
         address = 0
+        try:
+            with open(filename) as f:
+                for line in f:
+                    comment_split = line.strip().split("#")
+                    instruction = comment_split[0].strip()
 
+                    if instruction == "":
+                        continue
+                    num = int(instruction, 2)
+                    self.ram[address] = num
+                    address += 1
+
+        except FileNotFoundError:
+            print("File not found")
+            sys.exit(2)
         # For now, we've just hardcoded a program:
 
-        program = [
-            # From print8.ls8
-            0b10000010, # LDI R0,8
-            0b00000000,
-            0b00001000,
-            0b01000111, # PRN R0
-            0b00000000,
-            0b00000001, # HLT
-        ]
+        # program = [
+        #     # From print8.ls8
+        #     0b10000010, # LDI R0,8
+        #     0b00000000,
+        #     0b00001000,
+        #     0b01000111, # PRN R0
+        #     0b00000000,
+        #     0b00000001, # HLT
+        # ]
 
-        for instruction in program:
-            self.ram[address] = instruction
-            address += 1
+        # for instruction in program:
+        #     self.ram[address] = instruction
+        #     address += 1
+            
 
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
 
         if op == "ADD":
             self.reg[reg_a] += self.reg[reg_b]
-        #elif op == "SUB": etc
+        elif op == "MUL":
+            self.reg[reg_a] *= self.reg[reg_b]
         else:
             raise Exception("Unsupported ALU operation")
 
@@ -76,18 +94,24 @@ class CPU:
             command = self.ram[self.pc]
             if command == LDI:
                 # Sets specified register to specified value.
-                num = self.ram[self.pc + 2]
-                regI = self.ram[self.pc + 1]
+                num = self.ram_read(self.pc + 2)
+                regI = self.ram_read(self.pc + 1)
                 self.reg[regI] = num
                 self.pc += 3
             elif command == PRN:
                 # Print numeric value stored in the given register.
-                regI = self.ram[self.pc + 1]
+                regI = self.ram_read(self.pc + 1)
                 print(self.reg[regI])
                 self.pc += 2
+            elif command == MUL:
+                firstReg = self.ram_read(self.pc + 1)
+                secReg = self.ram_read(self.pc + 2)
+                self.alu('MUL', firstReg, secReg)
+                self.pc += 3
             elif command == HLT:
                 # Halt the CPU and exit the emulator
                 sys.exit(0)
             else:
                 print("I did not understand that command: {command}")
                 sys.exit(1)
+
