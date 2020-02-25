@@ -86,6 +86,7 @@ class CPU:
                 print(self.reg[regI])
                 self.pc += 2
             elif command == HLT:
+                # Halt the CPU and exit the emulator
                 sys.exit(0)
             else:
                 print("I did not understand that command: {command}")
