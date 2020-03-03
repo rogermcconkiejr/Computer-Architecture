@@ -15,6 +15,7 @@ CMP = 0b10100111
 JMP = 0b01010100
 JEQ = 0b01010101 
 JNE = 0b01010110
+PRA = 0b01001000
 
 class CPU:
     """Main CPU class."""
@@ -43,6 +44,7 @@ class CPU:
         self.bt[JMP] = self.handle_JMP
         self.bt[JEQ] = self.handle_JEQ
         self.bt[JNE] = self.handle_JNE
+        self.bt[PRA] = self.handle_PRA
 
     def handle_LDI(self):
         # Sets specified register to specified value.
@@ -54,6 +56,11 @@ class CPU:
         # Print numeric value stored in the given register.
         regI = self.ram_read(self.pc + 1)
         print(self.reg[regI])
+        self.pc += 2
+    def handle_PRA(self):
+        regI = self.ram_read(self.pc + 1)
+        letter = chr(self.reg[regI])
+        print(letter)
         self.pc += 2
     def handle_HLT(self):
         # Halt the CPU and exit the emulator
